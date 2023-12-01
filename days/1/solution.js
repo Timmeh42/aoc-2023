@@ -1,37 +1,47 @@
 module.exports = function (input) {
-    let total = 0;
-    const numbs = input
+    const lines = input
         .trim()
         .split(/\r?\n/)
-        .map((line) => line
-            .match(/\d/g)
-        )
-        .map((line) => 10 * line[0] + 1 * line[line.length - 1])
-        .reduce((total, line) => total + line)
-    ;
-        
-    let total2 = 0;
-    const numbs2 = input
-        .trim()
-        .split('\r\n')
-        .map((line) => line
-            .replaceAll(
-                /(o)(?=ne)|(t)(?=wo)|(t)(?=hree)|(f)(?=our)|(f)(?=ive)|(s)(?=ix)|(s)(?=even)|(e)(?=ight)|(n)(?=ine)/g,
-                (match, one, two, three, four, five, six, seven, eight, nine) => {
-                    if (one) return 1;
-                    if (two) return 2;
-                    if (three) return 3;
-                    if (four) return 4;
-                    if (five) return 5;
-                    if (six) return 6;
-                    if (seven) return 7;
-                    if (eight) return 8;
-                    if (nine) return 9;
-                })
-            .match(/\d/g)
-        )
-        .map((line) => 10 * line[0] + 1 * line[line.length - 1])
-        .reduce((total, line) => total + line)
+        ;
 
-    return [numbs, numbs2];
+    let total1 = 0;
+    const regexFirst1 = /.*?(\d)/;
+    const regexLast1 = /.*(\d)/;
+    for (const line of lines) {
+        const first = regexFirst1.exec(line)[1];
+        const last = regexLast1.exec(line)[1];
+        total1 += 10 * first + 1 * last;
+    }
+
+    const dict = {
+        1:1,
+        2:2,
+        3:3,
+        4:4,
+        5:5,
+        6:6,
+        7:7,
+        8:8,
+        9:9,
+        one:1,
+        two:2,
+        three:3,
+        four:4,
+        five:5,
+        six:6,
+        seven:7,
+        eight:8,
+        nine:9,
+    };
+
+    let total2 = 0;
+    const regexFirst2 = /.*?(\d|one|two|three|four|five|six|seven|eight|nine)/;
+    const regexLast2 = /.*(\d|one|two|three|four|five|six|seven|eight|nine)/;
+    for (const line of lines) {
+        const first = regexFirst2.exec(line)[1];
+        const last = regexLast2.exec(line)[1];
+
+        total2 += 10 * dict[first] + dict[last]
+    }
+    return [total1, total2];
 }
