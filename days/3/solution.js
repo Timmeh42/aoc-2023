@@ -22,12 +22,14 @@ module.exports = function (input) {
         }
     }
     
+    let neighbourhoodStart = -lineLength - 2;
+    let neighbourhoodEnd = lineLength;
     for (let i = 0; i < input.length; i++) {
         const char = input.charCodeAt(i);
         // check if symbol
+        neighbourhoodStart += 1;
+        neighbourhoodEnd += 1;
         if (char === 61 || char === 64 || char === 47 || (char >= 35 && char <= 45)) {
-            const neighbourhoodStart = i - lineLength - 1;
-            const neighbourhoodEnd = i + lineLength + 1;
             let gearLinks = 0;
             let gearRatio = 1;
             for (let n = numberSearchStart; n < numbers.length; n++) {
@@ -46,7 +48,9 @@ module.exports = function (input) {
                     (number.end >= i + lineLength - 1 && number.start <= i + lineLength + 1)
                 ) {
                     gearLinks += 1;
-                    gearRatio *= number.value;
+                    if (gearLinks <= 2) {
+                        gearRatio *= number.value;
+                    }
                     if (number.seen === false) {
                         number.seen = true;
                         part1 += number.value;
