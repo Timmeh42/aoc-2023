@@ -7,7 +7,6 @@ module.exports = function (input) {
     const high = (time, distance) => Math.ceil((-time - (time**2 - 4*distance)**0.5)/(-2))
     const low = (time, distance) => Math.floor((-time + (time**2 - 4*distance)**0.5)/(-2))
     for (let i = 0; i < times.length; i++) {
-        console.log(high(times[i], distances[i]), low(times[i], distances[i]))
         part1 *= high(times[i], distances[i]) - low(times[i], distances[i]) - 1;
     }
     const time = parseInt(lines[0].split(/\s+/).slice(1).join(''))
