@@ -1,144 +1,76 @@
 module.exports = function (input) {
     let hands = input
         .trim()
-        .replaceAll('T', 'B')
-        .replaceAll('J', 'C')
-        .replaceAll('Q', 'D')
-        .replaceAll('K', 'E')
-        .replaceAll('A', 'F')
-        .split('\n').map((line) => {
+        .split('\n')
+        .map((line) => {
             let [cards, bid] = line.split(' ');
             bid = parseInt(bid);
-            const cardMap = { 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, B:0, C:0, D:0, E:0, F:0 };
-
+            const cardCounts = new Map();
             for (let c = 0; c < cards.length; c++) {
                 const card = cards[c];
-                cardMap[card] += 1;
+                cardCounts.set(card, (cardCounts.get(card) || 0) + 1);
             }
-            let rating = 0;
-            for (const cardCount of Object.values(cardMap)) {
-                if (cardCount === 2) {
-                    if (rating === 3) {
-                        rating = 4;
-                    } else if (rating === 1) {
-                        rating = 2;
-                    } else {
-                        rating = 1;
-                    }
-                } else if (cardCount === 3) {
-                    if (rating === 1) {
-                        rating = 4;
-                    } else {
-                        rating = 3;
-                    }
-                } else if (cardCount === 4) {
-                    rating = 5;
-                } else if (cardCount === 5) {
-                    rating = 6;
+            const orderedCardCounts = [...cardCounts.values()].sort().reverse()
+            let rating1 = Math.max(...orderedCardCounts);
+            if (rating1 >= 3) {
+                rating1 += 2;
+            }
+            if (rating1 === 5 && orderedCardCounts[1] !== 2) {
+                rating1 -= 1;
+            }
+            if (rating1 === 2 && orderedCardCounts[1] === 2) {
+                rating1 += 1;
+            }
+
+            let rating2 = rating1;
+            if (cardCounts.get('J') >= 4) { // four+ jokers: 5j = 7, 4j+1 = 7
+                rating2 = 7;
+            }
+            if (cardCounts.get('J') === 3) { // three jokers: 3j+2 = 7, 3j+1 = 6
+                rating2 = 7;
+                if (orderedCardCounts[1] === 1) {
+                    rating2 = 6;
                 }
             }
-            return { cards, bid, rating };
-        }
-    );
-    hands = hands.toSorted((hand1, hand2) => {
-        if (hand1.rating !== hand2.rating) {
-            return hand1.rating - hand2.rating;
+            if (cardCounts.get('J') === 2) { // two jokers: 3+2j = 7, 2+2j = 6, 2j+1 = 4
+                if (orderedCardCounts[0] === 3) {
+                    rating2 = 7;
+                } else if (orderedCardCounts[1] === 2) {
+                    rating2 = 6;
+                } else {
+                    rating2 = 4;
+                }
+            }
+            if (cardCounts.get('J') === 1) { // one joker: 4+1j = 7, 3+1j = 6, 2+2+1j = 5, 2+1j = 4, 1+1j = 2
+                if (orderedCardCounts[1] === 1 && orderedCardCounts[0] <= 2) {
+                    rating2 = orderedCardCounts[0] * 2;
+                } else {
+                    rating2 = orderedCardCounts[0] + 3;
+                }
+            }
+            return { cards, bid, rating1, rating2 };
+        });
+
+    const sorter = (cardRanks, ratingLabel) => (hand1, hand2) => {
+        if (hand1[ratingLabel] !== hand2[ratingLabel]) {
+            return hand1[ratingLabel] - hand2[ratingLabel];
         } else {
             for (let c = 0; c < hand1.cards.length; c++) {
                 if (hand1.cards[c] !== hand2.cards[c]) {
-                    return hand1.cards.charCodeAt(c) - hand2.cards.charCodeAt(c);
+                    return cardRanks.indexOf(hand1.cards[c]) - cardRanks.indexOf(hand2.cards[c]);
                 }
             }
-            return 0;
         }
-    });
-    const part1 = hands.reduce((sum, hand, h) => sum + hand.bid * (h+1), 0)
+        return 0;
+    };
 
-
-
-
-    
-    let hands2 = input
-        .trim()
-        .replaceAll('T', 'B')
-        .replaceAll('J', '0')
-        .replaceAll('Q', 'D')
-        .replaceAll('K', 'E')
-        .replaceAll('A', 'F')
-        .split('\n').map((line) => {
-            let [cards, bid] = line.split(' ');
-            bid = parseInt(bid);
-const cardMap = { 0:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, B:0, D:0, E:0, F:0 };
-
-for (let c = 0; c < cards.length; c++) {
-    const card = cards[c];
-    cardMap[card] += 1;
-}
-let rating = 0;
-// console.log(cards)
-for (const [card, cardCount] of Object.entries(cardMap)) {
-    // console.log(card, cardCount, rating)
-    if (card === '0') continue;
-    if (cardCount === 1) {
-        if (rating === 0 && cardMap['0'] === 1) rating = 1;
-        if (rating < 3 && cardMap['0'] === 2) rating = 3;
-        if (cardMap['0'] === 3) rating = 5;
-        if (cardMap['0'] === 4) rating = 6;
-    } else if (cardCount === 2) {
-        if (cardMap['0'] === 3) {
-            rating = 6
-        } else if (cardMap['0'] === 2) {
-            rating = 5
-        } else if (rating === 3) {
-            rating = 4;
-        } else if (rating === 1) {
-            rating = 2;
-            if (cardMap['0'] === 1) rating = 3;
-        } else {
-            rating = 1;
-            if (cardMap['0'] === 1) rating = 3;
-        }
-    } else if (cardCount === 3) {
-        if (rating === 1) {
-            rating = 4;
-        } else {
-            rating = 3;
-        }
-        if (cardMap['0'] === 1) rating = 5;
-        if (cardMap['0'] === 2) rating = 6;
-    } else if (cardCount === 4) {
-        rating = 5;
-        if (cardMap['0'] === 1) rating = 6;
-    } else if (cardCount === 5) {
-        rating = 6;
-    }
-}
-if (cardMap['0'] === 5) rating = 6;
-            return { cards, bid, rating };
-        }
-    );
-    hands2 = hands2.toSorted((hand1, hand2) => {
-        if (hand1.rating !== hand2.rating) {
-            return hand1.rating - hand2.rating;
-        } else {
-            for (let c = 0; c < hand1.cards.length; c++) {
-                if (hand1.cards[c] !== hand2.cards[c]) {
-                    return hand1.cards.charCodeAt(c) - hand2.cards.charCodeAt(c);
-                }
-            }
-            return 0;
-        }
-    });
-    // for (const hand of hands2) {
-    //     const realcards = hand.cards
-    //         .replaceAll('B', 'T')
-    //         .replaceAll('0', 'J')
-    //         .replaceAll('D', 'Q')
-    //         .replaceAll('E', 'K')
-    //         .replaceAll('F', 'A')
-    //     console.log(realcards + ' ' + hand.bid);
-    // }
-    const part2 = hands2.reduce((sum, hand, h) => sum + hand.bid * (h+1), 0)
-
+    const part1 = hands
+        .toSorted(sorter('23456789TJQKA', 'rating1'))
+        .reduce((sum, hand, i) => sum + hand.bid * (i + 1), 0)
+        ;
+    const part2 = hands
+        .toSorted(sorter('J23456789TQKA', 'rating2'))
+        .reduce((sum, hand, i) => sum + hand.bid * (i + 1), 0)
+        ;
     return [part1, part2];
 }
