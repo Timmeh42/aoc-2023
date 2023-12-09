@@ -1,5 +1,5 @@
 module.exports = function (input) {
-    const sequences = input.trim().split('\n').map((line) => line.split(' ').map((s) => parseInt(s)));
+    const sequences = input.trim().split('\n').map((line) => line.split(' ').map((s) => Number(s)));
     let part1 = 0;
     let part2 = 0;
     for (let sequence of sequences) {
