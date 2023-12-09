@@ -1,28 +1,25 @@
 module.exports = function (input) {
     const sequences = input.trim().split('\n').map((line) => line.split(' ').map((s) => parseInt(s)));
-
     let part1 = 0;
     let part2 = 0;
-    for (const sequence of sequences) {
-        console.log(sequence)
-        let diffSequences = [sequence];
-        let diffSequence = sequence;
+    for (let sequence of sequences) {
+        part1 += sequence.at(-1);
+        part2 += sequence[0];
+        let mul = -1;
         while (true) {
-            diffSequence = diffSequence.map((v, i, s) => s[i+1] - v).filter((v) => !Number.isNaN(v));
-            diffSequences.push(diffSequence);
-            if (diffSequence[0] === 0 && diffSequence[diffSequence.length - 1] === 0) {
+            for (let s = 0; s < sequence.length - 1; s++) {
+                sequence[s] = sequence[s + 1] - sequence[s];
+            }
+            sequence.length -= 1;
+            const start = sequence[0];
+            const end = sequence.at(-1);
+            if (start === 0 && end === 0) {
                 break;
             }
+            part1 += end;
+            part2 += start * mul;
+            mul *= -1;
         }
-
-        for (let d = diffSequences.length - 2; d >= 0; d--) {
-            let sequence = diffSequences[d];
-            sequence.push(sequence[sequence.length-1] + diffSequences[d+1].pop());
-            sequence.unshift(sequence[0] - diffSequences[d+1][0]);
-        }
-
-        part1 += diffSequences[0].pop();
-        part2 += diffSequences[0][0];
     }
     return [part1, part2];
 }
