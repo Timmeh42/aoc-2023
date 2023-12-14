@@ -20,7 +20,11 @@ module.exports = function (input) {
     const height = y + 1;
     const width = x;
 
-    let tiltedGrid = [];
+    let tempGrid = new Array(grid.length);
+    for (let n = 0; n < grid.length; n++) {
+        tempGrid[n] = new Array(grid.length);
+    }
+
     let part1 = 0;
     let part2 = 0;
     const rounds = 4e9;
@@ -29,9 +33,7 @@ module.exports = function (input) {
     let looped = false;
     for (let n = 0; n < rounds; n++) {
         let hash = '';
-        tiltedGrid = [];
         for (let x = 0; x < width; x++) {
-            tiltedGrid.push([]);
             let rockCount = 0;
             let spaceCount = 0;
             let brickCount = 0;
@@ -39,11 +41,21 @@ module.exports = function (input) {
             for (let y = 0; y < height; y++) {
                 const piece = grid[x][y];
                 if (piece !== 2 && brickCount > 0) {
-                    tiltedGrid[x].push(...Array(rockCount).fill(1), ...Array(spaceCount).fill(0), ...Array(brickCount).fill(2));
+                    for (let n = 0; n < rockCount; n++) {
+                        tempGrid[x][compactedY + n] = 1;
+                    }
+                    for (let n = 0; n < spaceCount; n++) {
+                        tempGrid[x][compactedY + rockCount + n] = 0;
+                    }
+                    for (let n = 0; n < brickCount; n++) {
+                        tempGrid[x][compactedY + rockCount + spaceCount + n] = 2;
+                    }
                     if (rockCount > 0) hash += rockCount;
                     if (spaceCount > 0) hash += spaceCount;
                     if (brickCount > 0) hash += brickCount;
-                    score += (2 * (height - compactedY) - rockCount + 1) * rockCount / 2
+                    if (part1 === 0) {
+                        score += (2 * (height - compactedY) - rockCount + 1) * rockCount / 2
+                    }
                     rockCount = 0;
                     spaceCount = 0;
                     brickCount = 0;
@@ -53,16 +65,29 @@ module.exports = function (input) {
                 else if (piece === 1) rockCount++;
                 else if (piece === 2) brickCount++;
             }
-            tiltedGrid[x].push(...Array(rockCount).fill(1), ...Array(spaceCount).fill(0), ...Array(brickCount).fill(2));
+            for (let n = 0; n < rockCount; n++) {
+                tempGrid[x][compactedY + n] = 1;
+            }
+            for (let n = 0; n < spaceCount; n++) {
+                tempGrid[x][compactedY + rockCount + n] = 0;
+            }
+            for (let n = 0; n < brickCount; n++) {
+                tempGrid[x][compactedY + rockCount + spaceCount + n] = 2;
+            }
             if (rockCount > 0) hash += rockCount;
             if (spaceCount > 0) hash += spaceCount;
             if (brickCount > 0) hash += brickCount;
-            score += (2 * (height - compactedY) - rockCount + 1) * rockCount / 2
+            if (part1 === 0) {
+                score += (2 * (height - compactedY) - rockCount + 1) * rockCount / 2
+            }
         }
+
+        // part1 score
         if (n === 0) {
             part1 = score;
         }
 
+        // check hash
         const lastSeen = memory.indexOf(hash);
         if (looped === false && lastSeen !== -1) {
             const loopLength = n - lastSeen;
@@ -71,33 +96,21 @@ module.exports = function (input) {
         }
         memory.push(hash);
 
-        const rotatedGrid = [];
+        // rotate
         for (let x = 0; x < width; x++) {
-            rotatedGrid.push([]);
             for (let y = 0; y < height; y++) {
-                if (tiltedGrid[y][width - x - 1] === undefined) throw [x, y, width, height]
-                rotatedGrid[x].push(tiltedGrid[y][width - x - 1]);
+                grid[x][y] = tempGrid[y][width - x - 1];
             }
-        }
-        grid = rotatedGrid;
-        
-        let s = '';
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                s += rotatedGrid[x][y]
-            }
-            s += '\n'
         }
 
+        // part2 score
         score = 0;
         for (let x = 0; x < width; x++) {
-            let colScore = 0
             for (let y = 0; y < height; y++) {
                 if (grid[x][y] === 1) {
-                    colScore += height - y;
+                    score += height - y;
                 }
             }
-            score += colScore;
         }
     }
     part2 = score;
