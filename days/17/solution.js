@@ -81,11 +81,6 @@ module.exports = function (input) {
                 continue;
             }
     
-            const node = nodes.get(step.nodeKey);
-            if (node === undefined) {
-                continue;
-            }
-    
             processed.add(step.stepKey);
     
             const nextSteps = generateNextSteps(step, ultraCrucibles);
@@ -94,9 +89,6 @@ module.exports = function (input) {
                     continue;
                 }
                 const node = nodes.get(nextStep.nodeKey);
-                if (node === undefined) {
-                    continue;
-                }
                 const nextStepProspectiveCost = step.cumulativeCost + node.cost;
                 if (nextStep.cumulativeCost === undefined || nextStep.cumulativeCost > nextStepProspectiveCost) {
                     nextStep.cumulativeCost = nextStepProspectiveCost;
